@@ -94,7 +94,10 @@ fn start_compile(compile_flag: &mut bool) {
 	*compile_flag = true;
 }
 fn compile(compiled_words: &mut String, s: String) {
-	let b = s + " ";
+	let b = s + " "; // to separate words using space
+
+	// _TODO_ code to redifine words if already exist
+
 	compiled_words.push_str(&b);
 }
 fn stop_compile(compile_flag: &mut bool, compiled_words: &mut String) {
@@ -175,6 +178,9 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>, compile_flag:
 							println!("not in compile mode");
 							return -1;
 						}
+
+						// _TODO_ adding more builtin words here
+
 						"words" => {
 							// show words
 							let mut words: Vec<&str> = compiled_words.split("<<<>>>").collect();
