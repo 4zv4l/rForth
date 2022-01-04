@@ -1,5 +1,66 @@
 use std::io::{stdin};
 
+fn mul(int_stack: &mut Vec<i64>) -> i32 {
+	let n1 = match int_stack.pop() {
+		None =>  {
+			println!("Stack underflow");
+			return -1
+		}
+		Some(n) => n,
+	};
+	let n2 = match int_stack.pop() {	
+		None =>  {
+			println!("Stack underflow");
+			return -1;
+		}
+		Some(n) => n,
+	};
+	int_stack.push(n1*n2);
+	return 0
+}
+
+fn div(int_stack: &mut Vec<i64>) -> i32 {
+	let n1 = match int_stack.pop() {
+		None =>  {
+			println!("Stack underflow");
+			return -1
+		}
+		Some(n) => n,
+	};
+	let n2 = match int_stack.pop() {	
+		None =>  {
+			println!("Stack underflow");
+			return -1;
+		}
+		Some(n) => n,
+	};
+	if n2 == 0 {
+		println!("Division by zero");
+		return -1
+	}
+	int_stack.push(n1/n2);
+	return 0
+}
+
+fn sub(int_stack: &mut Vec<i64>) -> i32 {
+	let n1 = match int_stack.pop() {
+		None =>  {
+			println!("Stack underflow");
+			return -1
+		}
+		Some(n) => n,
+	};
+	let n2 = match int_stack.pop() {	
+		None =>  {
+			println!("Stack underflow");
+			return -1;
+		}
+		Some(n) => n,
+	};
+	int_stack.push(n1-n2);
+	return 0
+}
+
 fn add(int_stack: &mut Vec<i64>) -> i32 {
 	let n1 = match int_stack.pop() {
 		None =>  {
@@ -42,6 +103,21 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>) -> i32 {
 					}
 					"+" => {
 						if add(int_stack) == -1 {
+							return -1
+						}
+					}
+					"-" => {
+						if sub(int_stack) == -1 {
+							return -1
+						}
+					}
+					"*" => {
+						if mul(int_stack) == -1 {
+							return -1
+						}
+					}
+					"/" => {
+						if div(int_stack) == -1 {
 							return -1
 						}
 					}
