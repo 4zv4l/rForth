@@ -1,4 +1,5 @@
-use std::io::{stdin};
+use std::io::{stdin, BufReader, BufRead};
+use std::fs::File;
 
 fn mul(int_stack: &mut Vec<i64>) -> i32 {
 	let n1 = match int_stack.pop() {
@@ -127,7 +128,7 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>) -> i32 {
 						}
 					}
 					"bye" => return 1,
-					_ => {
+					_ => { // else doesn't know the word
 						println!("{} : not known", input);
 						return -1
 					}	
@@ -138,23 +139,59 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>) -> i32 {
 	return 0;
 }
 
-fn main() {
+fn stdin_interpreter(mut fd: Box<dyn BufRead>) {
 	let mut int_stack: Vec<i64> = Vec::new();
 	let mut line = String::new();
-	println!("Welcome to rForth\ntype 'bye' to exit");
 	loop {
-		stdin().read_line(&mut line)
+		fd.read_line(&mut line)
 			.expect("err: read_line()");
 		line = line.trim().to_string();
 		let input_array = line.split(' ').collect();
 		match process_input(input_array, &mut int_stack) {
-			0 => {
-				println!(" ok.");
-			}
-			1 => return,
-			-1 => (),
+			0 => println!(" ok."), // succeeded
+			1 => return, // bye
+			-1 => (), // word not found
 			_ => (),
 		}
 		line.clear();
 	}
+}
+
+fn file_interpreter(mut fd: Box<dyn BufRead>) {
+	let mut int_stack: Vec<i64> = Vec::new();
+	let mut line = String::new();
+	while fd.read_line(&mut line).unwrap() > 0 {
+		line = line.trim().to_string();
+		let input_array = line.split(' ').collect();
+		match process_input(input_array, &mut int_stack) {
+			1 => return, // bye
+			-1 => (), // word not found
+			_ => (),
+		}
+		line.clear();
+	}
+}
+
+fn main() {
+	// check argument to either read from a file or using stdin
+	let args: Vec<String> = std::env::args().collect();
+	match args.len() {
+		1 => {
+			println!("Welcome to rForth\ntype 'bye' to exit");
+			let fd = Box::new(BufReader::new(stdin()));
+			stdin_interpreter(fd)
+		}
+		2 => {
+			let f = File::open(&args[1]).expect("err: Cannot open this file");
+			let fd = Box::new(BufReader::new(f));
+			file_interpreter(fd)
+		}
+		_ => {
+			println!(
+				"{}{}{}",
+				"rForth usage :",
+				"\n\trForth\trForth interpreter using stdin",
+				"\n\trForth <file\t>rForth interpretrer using a file as input")
+		}
+	};
 }
