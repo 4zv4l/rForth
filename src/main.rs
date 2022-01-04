@@ -1,6 +1,7 @@
 use std::io::{stdin, BufReader, BufRead};
 use std::fs::File;
 
+// take 2 top numbers from the stack and multiply them
 fn mul(int_stack: &mut Vec<i64>) -> i32 {
 	let n1 = match int_stack.pop() {
 		None =>  {
@@ -20,6 +21,8 @@ fn mul(int_stack: &mut Vec<i64>) -> i32 {
 	return 0;
 }
 
+// take 2 top numbers from the stack and divide them
+// take care of 0 division
 fn div(int_stack: &mut Vec<i64>) -> i32 {
 	let n1 = match int_stack.pop() {
 		None =>  {
@@ -43,6 +46,7 @@ fn div(int_stack: &mut Vec<i64>) -> i32 {
 	return 0
 }
 
+// take 2 top numbers from the stack and substitute them
 fn sub(int_stack: &mut Vec<i64>) -> i32 {
 	let n1 = match int_stack.pop() {
 		None =>  {
@@ -62,6 +66,7 @@ fn sub(int_stack: &mut Vec<i64>) -> i32 {
 	return 0
 }
 
+// take 2 top numbers from the stack and addition them
 fn add(int_stack: &mut Vec<i64>) -> i32 {
 	let n1 = match int_stack.pop() {
 		None =>  {
@@ -81,6 +86,7 @@ fn add(int_stack: &mut Vec<i64>) -> i32 {
 	return 0
 }
 
+// remove the top number of the stack
 fn pop(int_stack: &mut Vec<i64>) -> i32 {
 	if int_stack.is_empty() {
 		println!("Stack underflow");
@@ -120,6 +126,7 @@ fn get_from_words(input: String, compiled_words: &mut String) -> Vec<&str> {
 	return Vec::new();
 }
 
+// process each words given by a file or a user
 fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>, compile_flag: &mut bool, compiled_words: &mut String) -> i32 {
 	for input in input_array {
 		if *compile_flag { // enter in compile mode
@@ -208,6 +215,7 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>, compile_flag:
 	return 0;
 }
 
+// taking input from the user
 fn stdin_interpreter(mut fd: Box<dyn BufRead>) {
 	let mut int_stack: Vec<i64> = Vec::new();
 	let mut line = String::new();
@@ -234,6 +242,7 @@ fn stdin_interpreter(mut fd: Box<dyn BufRead>) {
 	}
 }
 
+// reading from a file
 fn file_interpreter(mut fd: Box<dyn BufRead>) {
 	let mut int_stack: Vec<i64> = Vec::new();
 	let mut line = String::new();
