@@ -90,51 +90,106 @@ fn pop(int_stack: &mut Vec<i64>) -> i32 {
 	return 0;
 }
 
-fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>) -> i32 {
+fn start_compile(compile_flag: &mut bool) {
+	*compile_flag = true;
+}
+fn compile(compiled_words: &mut String, s: String) {
+	let b = s + " ";
+	compiled_words.push_str(&b);
+}
+fn stop_compile(compile_flag: &mut bool, compiled_words: &mut String) {
+	*compile_flag = false;
+	compiled_words.push_str("<<<>>>");
+}
+
+fn get_from_words(input: String, compiled_words: &mut String) -> Vec<&str> {
+	let mut words: Vec<&str> = compiled_words.split("<<<>>>").collect();
+	words.retain(|s| s.to_string() != "".to_string());
+	for word in words {
+		let mut key: Vec<&str> = word.split(' ').collect();
+		key.retain(|&s| s.to_string() != "".to_string());
+		if input == key[0] {
+			key.remove(0);
+			return key
+		}
+	}
+	return Vec::new();
+}
+
+fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>, compile_flag: &mut bool, compiled_words: &mut String) -> i32 {
 	for input in input_array {
-		match input.parse::<i64>() {
-			Ok(n) => { // if number then push it to the stack
-				int_stack.push(n)
+		if *compile_flag == true { // enter in compile mode
+			if input == ";" { // exit compile mode
+				stop_compile(compile_flag, compiled_words);
+			} else {
+				compile(compiled_words, input.to_string());
 			}
-			Err(_) => { // else check dictionnary
-				match input {
-					// dictionnary
-					"show" => {
-						println!("{:?}", int_stack);
-					}
-					"+" => {
-						if add(int_stack) == -1 {
-							return -1
+		} else {
+			match input.parse::<i64>() {
+				Ok(n) => { // if number then push it to the stack
+					int_stack.push(n)
+				}
+				Err(_) => { // else check dictionnary
+					match input {
+						// dictionnary
+						"show" => {
+							println!("{:?}", int_stack);
+						}
+						"+" => {
+							if add(int_stack) == -1 {
+								return -1
+							}
+						}
+						"-" => {
+							if sub(int_stack) == -1 {
+								return -1
+							}
+						}
+						"*" => {
+							if mul(int_stack) == -1 {
+								return -1
+							}
+						}
+						"/" => {
+							if div(int_stack) == -1 {
+								return -1
+							}
+						}
+						"drop" => {
+							if pop(int_stack) == -1 {
+								return -1
+							}
+						}
+						":" => { // set compile mode
+							start_compile(compile_flag);
+						}
+						";" => {
+							println!("not in compile mode");
+							return -1;
+						}
+						"words" => {
+							// show words
+							let mut words: Vec<&str> = compiled_words.split("<<<>>>").collect();
+							words.retain(|s| s.to_string() != "".to_string());
+							for word in words {
+								println!(": {} ;", word);
+							}
+						}
+						"bye" => return 1,
+						_ => { // else check if it's in compiled words
+							if compiled_words.contains(input) {
+								let mut words = compiled_words.clone();
+								let word: Vec<&str> = get_from_words(input.to_string(), &mut words);
+								process_input(word, int_stack, compile_flag, &mut *compiled_words);
+							} else { // doesn't know the word
+								println!("{} : not known", input);
+								return -1
+							}
 						}
 					}
-					"-" => {
-						if sub(int_stack) == -1 {
-							return -1
-						}
-					}
-					"*" => {
-						if mul(int_stack) == -1 {
-							return -1
-						}
-					}
-					"/" => {
-						if div(int_stack) == -1 {
-							return -1
-						}
-					}
-					"drop" => {
-						if pop(int_stack) == -1 {
-							return -1
-						}
-					}
-					"bye" => return 1,
-					_ => { // else doesn't know the word
-						println!("{} : not known", input);
-						return -1
-					}	
 				}
 			}
-		}
+		} 
 	}
 	return 0;
 }
@@ -142,13 +197,21 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>) -> i32 {
 fn stdin_interpreter(mut fd: Box<dyn BufRead>) {
 	let mut int_stack: Vec<i64> = Vec::new();
 	let mut line = String::new();
+	let mut compile_flag: bool = false;
+	let mut compiled_words = String::new();
 	loop {
 		fd.read_line(&mut line)
 			.expect("err: read_line()");
 		line = line.trim().to_string();
-		let input_array = line.split(' ').collect();
-		match process_input(input_array, &mut int_stack) {
-			0 => println!(" ok."), // succeeded
+		let mut input_array: Vec<&str> = line.split(' ').collect();
+		// remove all spaces left
+		input_array.retain(|&s| s.to_string() != "".to_string());
+		match process_input(input_array, &mut int_stack, &mut compile_flag, &mut compiled_words) {
+			0 => {
+				if compile_flag == false { // don't show while making words
+					println!(" ok."); // succeeded
+				}
+			}
 			1 => return, // bye
 			-1 => (), // word not found
 			_ => (),
@@ -160,10 +223,12 @@ fn stdin_interpreter(mut fd: Box<dyn BufRead>) {
 fn file_interpreter(mut fd: Box<dyn BufRead>) {
 	let mut int_stack: Vec<i64> = Vec::new();
 	let mut line = String::new();
+	let mut compile_flag: bool = false;
+	let mut compiled_words = String::new();
 	while fd.read_line(&mut line).unwrap() > 0 {
 		line = line.trim().to_string();
 		let input_array = line.split(' ').collect();
-		match process_input(input_array, &mut int_stack) {
+		match process_input(input_array, &mut int_stack, &mut compile_flag, &mut compiled_words) {
 			1 => return, // bye
 			-1 => (), // word not found
 			_ => (),
