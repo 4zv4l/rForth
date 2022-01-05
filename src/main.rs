@@ -87,13 +87,17 @@ fn add(int_stack: &mut Vec<i64>) -> i32 {
 }
 
 // remove the top number of the stack
-fn pop(int_stack: &mut Vec<i64>) -> i32 {
+fn drop(int_stack: &mut Vec<i64>) -> i32 {
 	if int_stack.is_empty() {
 		println!("Stack underflow");
 		return -1
 	}
 	int_stack.pop();
 	return 0;
+}
+
+fn key(int_stack: &mut Vec<i64>) {
+	// don't know how to do without using raw terminal mode
 }
 
 fn start_compile(compile_flag: &mut bool) {
@@ -171,7 +175,7 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>, compile_flag:
 							}
 						}
 						"drop" => {
-							if pop(int_stack) == -1 {
+							if drop(int_stack) == -1 {
 								return -1
 							}
 						}
@@ -188,6 +192,9 @@ fn process_input(input_array: Vec<&str>, int_stack: &mut Vec<i64>, compile_flag:
 
 						// _TODO_ adding more builtin words here
 
+						"key" => {
+							key(int_stack);
+						}
 						"words" => {
 							// show words
 							let mut words: Vec<&str> = compiled_words.split("<<<>>>").collect();
@@ -221,6 +228,7 @@ fn stdin_interpreter(mut fd: Box<dyn BufRead>) {
 	let mut line = String::new();
 	let mut compile_flag: bool = false;
 	let mut compiled_words = String::new();
+	println!("Welcome to rForth\ntype 'bye' to exit");
 	loop {
 		fd.read_line(&mut line)
 			.expect("err: read_line()");
@@ -258,6 +266,8 @@ fn file_interpreter(mut fd: Box<dyn BufRead>) {
 		}
 		line.clear();
 	}
+	let fd = Box::new(BufReader::new(stdin()));
+	stdin_interpreter(fd);
 }
 
 fn main() {
@@ -265,12 +275,19 @@ fn main() {
 	let args: Vec<String> = std::env::args().collect();
 	match args.len() {
 		1 => {
-			println!("Welcome to rForth\ntype 'bye' to exit");
 			let fd = Box::new(BufReader::new(stdin()));
 			stdin_interpreter(fd)
 		}
 		2 => {
-			let f = File::open(&args[1]).expect("err: Cannot open this file");
+			let f = match File::open(&args[1]) {
+				Ok(file) => file,
+				Err(why) => {
+					println!("err: {}", why);
+					let fd = Box::new(BufReader::new(stdin()));
+					stdin_interpreter(fd);
+					return			
+				}
+			};
 			let fd = Box::new(BufReader::new(f));
 			file_interpreter(fd)
 		}
