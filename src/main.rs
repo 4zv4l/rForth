@@ -1,135 +1,8 @@
 use std::io::{stdin, BufReader, BufRead};
 use std::fs::File;
 
-// take 2 top numbers from the stack and multiply them
-fn mul(int_stack: &mut Vec<i64>) -> i32 {
-    let n1 = match int_stack.pop() {
-        None =>  {
-            println!("Stack underflow");
-            return -1
-        }
-        Some(n) => n,
-    };
-    let n2 = match int_stack.pop() {	
-        None =>  {
-            println!("Stack underflow");
-            return -1;
-        }
-        Some(n) => n,
-    };
-    int_stack.push(n1*n2);
-    return 0;
-}
-
-// take 2 top numbers from the stack and divide them
-// take care of 0 division
-fn div(int_stack: &mut Vec<i64>) -> i32 {
-    let n1 = match int_stack.pop() {
-        None =>  {
-            println!("Stack underflow");
-            return -1
-        }
-        Some(n) => n,
-    };
-    let n2 = match int_stack.pop() {	
-        None =>  {
-            println!("Stack underflow");
-            return -1;
-        }
-        Some(n) => n,
-    };
-    if n2 == 0 {
-        println!("Division by zero");
-        return -1
-    }
-    int_stack.push(n1/n2);
-    return 0
-}
-
-// take 2 top numbers from the stack and substitute them
-fn sub(int_stack: &mut Vec<i64>) -> i32 {
-    let n1 = match int_stack.pop() {
-        None =>  {
-            println!("Stack underflow");
-            return -1
-        }
-        Some(n) => n,
-    };
-    let n2 = match int_stack.pop() {	
-        None =>  {
-            println!("Stack underflow");
-            return -1;
-        }
-        Some(n) => n,
-    };
-    int_stack.push(n1-n2);
-    return 0
-}
-
-// take 2 top numbers from the stack and addition them
-fn add(int_stack: &mut Vec<i64>) -> i32 {
-    let n1 = match int_stack.pop() {
-        None =>  {
-            println!("Stack underflow");
-            return -1
-        }
-        Some(n) => n,
-    };
-    let n2 = match int_stack.pop() {	
-        None =>  {
-            println!("Stack underflow");
-            return -1;
-        }
-        Some(n) => n,
-    };
-    int_stack.push(n1+n2);
-    return 0
-}
-
-// remove the top number of the stack
-fn drop(int_stack: &mut Vec<i64>) -> i32 {
-    if int_stack.is_empty() {
-        println!("Stack underflow");
-        return -1
-    }
-    int_stack.pop();
-    return 0;
-}
-
-// get one key from the user and push the ascii value to the stack
-fn key(int_stack: &mut Vec<i64>) {
-    // idk how to do this in rust
-}
-
-// return true if the word is in the dictionary
-fn is_in_compiled_words(word: String, compiled_words: &Vec<Vec<String>>) -> bool {
-    for i in 0..compiled_words.len() {
-        if word == compiled_words[i][0] {
-            return true;
-        }
-    }
-    return false;
-}
-
-// return the  word in the compiled words f existing
-fn get_word(word: String, compiled_words: &Vec<Vec<String>>) -> Vec<String> {
-    for i in 0..compiled_words.len() {
-        if word == compiled_words[i][0] {
-            return compiled_words[i].clone();
-        }
-    }
-    return Vec::new();
-}
-
-// return the index of the word in the compiled words
-fn get_index(word: String, compiled_words: &Vec<Vec<String>>) -> i32 {
-    for i in 0..compiled_words.len() {
-        if word == compiled_words[i][0] {
-            return i as i32;
-        }
-    }
-    return -1;
-}
+mod words;
+mod compile;
 
 fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut Vec<Vec<String>>, compile_flag: &mut bool) -> i32 {
     let input: &str = &input;
@@ -145,27 +18,27 @@ fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut V
             println!("{:?}", int_stack);
         }
         "+" => {
-            if add(int_stack) == -1 {
+            if words::add(int_stack) == -1 {
                 return -1
             }
         }
         "-" => {
-            if sub(int_stack) == -1 {
+            if words::sub(int_stack) == -1 {
                 return -1
             }
         }
         "*" => {
-            if mul(int_stack) == -1 {
+            if words::mul(int_stack) == -1 {
                 return -1
             }
         }
         "/" => {
-            if div(int_stack) == -1 {
+            if words::div(int_stack) == -1 {
                 return -1
             }
         }
         "drop" => { // remove the top number of the stack
-            if drop(int_stack) == -1 {
+            if words::drop(int_stack) == -1 {
                 return -1
             }
         }
@@ -184,12 +57,12 @@ fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut V
         // _TODO_ adding more builtin words here
 
         "key" => {
-            key(int_stack);
+            words::key(int_stack);
         }
         "emit" => { // print the top number of the stack in ascii
             print!("{}", int_stack[int_stack.len()-1] as u8 as char);
             // pop the top number of the stack
-            drop(int_stack);
+            words::drop(int_stack);
         }
         "words" => {
             // show compiled words
@@ -199,8 +72,8 @@ fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut V
         }
         "bye" => return 1,
         _ => { // else check if it's in compiled words
-            if is_in_compiled_words(input.to_string(), compiled_words) {
-                let word = get_word(input.to_string(), compiled_words);
+            if compile::is_in_compiled_words(input.to_string(), compiled_words) {
+                let word = compile::get_word(input.to_string(), compiled_words);
                 // proccess the word
                 let word = word[1..].to_vec(); // remove the word from the compiled words to avoid infinite loop
                 process_input(word, int_stack, compile_flag, compiled_words);
@@ -224,9 +97,9 @@ fn process_input(input_array: Vec<String>, int_stack: &mut Vec<i64>, compile_fla
                 if compiled_words.len() > 0 {
                     let last_word = compiled_words[compiled_words.len()-1].clone();
                     compiled_words.pop();
-                    if is_in_compiled_words(last_word[0].clone(), compiled_words) {
+                    if compile::is_in_compiled_words(last_word[0].clone(), compiled_words) {
                         // remove the word from the compiled words
-                        let index = get_index(last_word[0].clone(), compiled_words);
+                        let index = compile::get_index(last_word[0].clone(), compiled_words);
                         compiled_words.remove(index as usize);
                         // add the new word to the compiled words
                         compiled_words.push(last_word.clone());
@@ -258,6 +131,7 @@ fn process_input(input_array: Vec<String>, int_stack: &mut Vec<i64>, compile_fla
     return 0;
 }
 
+// get input from the user until ENTER and return each word entered
 fn get_input() -> Vec<String> {
     let fd = stdin();
     let mut line = String::new();
