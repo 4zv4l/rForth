@@ -182,11 +182,12 @@ fn file_interpreter(f: File) {
         }
         line.clear();
     }
+	// if file doesn't end with 'bye' enter into stdin interpreter mode
     stdin_interpreter();
 }
 
 fn main() {
-    // check argument to either read from a file or using stdin
+    // check argument to either read from a file or stdin
     let args: Vec<String> = std::env::args().collect();
     match args.len() {
         1 => {
