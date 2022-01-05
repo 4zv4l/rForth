@@ -56,6 +56,9 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
             println!("not in compile mode");
             return -1;
         }
+        r#".""# => {
+            println!("start string");
+        }
 
         // _TODO_ adding more builtin words here
 
@@ -64,8 +67,6 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
         }
         "emit" => { // print the top number of the stack in ascii
             words::emit(int_stack);
-            // pop the top number of the stack
-            words::drop(int_stack);
         }
         "words" => {
             // show compiled words
