@@ -1,12 +1,13 @@
 use std::io::{stdin, BufReader, BufRead};
 use std::fs::File;
-use stack::Stack;
+use strs::{Stack, CompiledWords};
 
 mod words;
 mod compile;
-mod stack;
+mod strs;
 
-fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut Vec<Vec<String>>, compile_flag: &mut bool) -> i32 {
+// execute one word
+fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut CompiledWords, compile_flag: &mut bool) -> i32 {
     let input: &str = &input;
     match input {
         // builtin dictionnary
@@ -89,7 +90,7 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
 }
 
 // process each words given by a file or a user
-fn process_input(input_array: Vec<String>, int_stack: &mut Stack<i64>, compile_flag: &mut bool, compiled_words: &mut Vec<Vec<String>>) -> i32 {
+fn process_input(input_array: Vec<String>, int_stack: &mut Stack<i64>, compile_flag: &mut bool, compiled_words: &mut CompiledWords) -> i32 {
     for input in input_array {
         if *compile_flag { // enter in compile mode
             if input == ";" { // exit compile mode
@@ -102,7 +103,7 @@ fn process_input(input_array: Vec<String>, int_stack: &mut Stack<i64>, compile_f
                     if compile::is_in_compiled_words(last_word[0].clone(), compiled_words) {
                         // remove the word from the compiled words
                         let index = compile::get_index(last_word[0].clone(), compiled_words);
-                        compiled_words.remove(index as usize);
+                        compiled_words.remove(index);
                         // add the new word to the compiled words
                         compiled_words.push(last_word.clone());
                         println!("{} : redefined", last_word[0]);
@@ -150,7 +151,7 @@ fn get_input() -> Vec<String> {
 fn stdin_interpreter() {
     let mut int_stack: Stack<i64> = Stack::new(); // stack of number
     let mut compile_flag: bool = false; // flag to enter in compile mode
-    let mut compiled_words: Vec<Vec<String>> = Vec::new(); // contain array of compiled words
+    let mut compiled_words: CompiledWords = CompiledWords::new(); // contain array of compiled words
     println!("Welcome to rForth\ntype 'bye' to exit");
     loop {
         let input_array = get_input();
@@ -173,7 +174,7 @@ fn file_interpreter(f: File) {
     let mut int_stack: Stack<i64> = Stack::new(); // stack of number
     let mut line = String::new();
     let mut compile_flag: bool = false;
-    let mut compiled_words: Vec<Vec<String>> = Vec::new();
+    let mut compiled_words: CompiledWords = CompiledWords::new();
     while fd.read_line(&mut line).unwrap() > 0 {
         line = line.trim().to_string();
         let input_array = line.split_whitespace().map(str::to_string).collect();
