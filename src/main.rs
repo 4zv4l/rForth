@@ -1,4 +1,4 @@
-use std::io::{stdin, BufReader, BufRead, Read};
+use std::io::{stdin, BufReader, BufRead};
 use std::fs::File;
 
 // take 2 top numbers from the stack and multiply them
@@ -96,17 +96,9 @@ fn drop(int_stack: &mut Vec<i64>) -> i32 {
     return 0;
 }
 
-// get a key input from the user and push the ascii value to the stack
-fn key(int_stack: &mut Vec<i64>) -> i32 {
-    // set terminal to raw mode to get key input
-    let stdin = stdin();
-    let mut stdin = stdin.lock();
-    let mut buf = [0; 1];
-    // read one byte from stdin
-    stdin.read(&mut buf).unwrap();
-    // push the ascii value to the stack
-    int_stack.push(buf[0] as i64);
-    return 0;
+// get one key from the user and push the ascii value to the stack
+fn key(int_stack: &mut Vec<i64>) {
+    // idk how to do this in rust
 }
 
 // return true if the word is in the dictionary
@@ -193,6 +185,11 @@ fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut V
 
         "key" => {
             key(int_stack);
+        }
+        "emit" => { // print the top number of the stack in ascii
+            print!("{}", int_stack[int_stack.len()-1] as u8 as char);
+            // pop the top number of the stack
+            drop(int_stack);
         }
         "words" => {
             // show compiled words
