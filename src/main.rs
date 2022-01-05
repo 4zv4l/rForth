@@ -1,21 +1,23 @@
 use std::io::{stdin, BufReader, BufRead};
 use std::fs::File;
+use stack::Stack;
 
 mod words;
 mod compile;
+mod stack;
 
-fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut Vec<Vec<String>>, compile_flag: &mut bool) -> i32 {
+fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut Vec<Vec<String>>, compile_flag: &mut bool) -> i32 {
     let input: &str = &input;
     match input {
         // builtin dictionnary
         ".s" => { // show length and content of the stack
             print!("<{}> ", int_stack.len());
-            for e in int_stack {
-                print!("{} ", e);
+            for i in 0..int_stack.len() {
+                print!("{} ", int_stack.inner[i]);
             }
         }
         "show" => {
-            println!("{:?}", int_stack);
+            print!("{}", int_stack);
         }
         "+" => {
             if words::add(int_stack) == -1 {
@@ -60,7 +62,7 @@ fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut V
             words::key(int_stack);
         }
         "emit" => { // print the top number of the stack in ascii
-            print!("{}", int_stack[int_stack.len()-1] as u8 as char);
+            words::emit(int_stack);
             // pop the top number of the stack
             words::drop(int_stack);
         }
@@ -87,7 +89,7 @@ fn execute_words(input: String, int_stack: &mut Vec<i64>, compiled_words: &mut V
 }
 
 // process each words given by a file or a user
-fn process_input(input_array: Vec<String>, int_stack: &mut Vec<i64>, compile_flag: &mut bool, compiled_words: &mut Vec<Vec<String>>) -> i32 {
+fn process_input(input_array: Vec<String>, int_stack: &mut Stack<i64>, compile_flag: &mut bool, compiled_words: &mut Vec<Vec<String>>) -> i32 {
     for input in input_array {
         if *compile_flag { // enter in compile mode
             if input == ";" { // exit compile mode
@@ -146,7 +148,7 @@ fn get_input() -> Vec<String> {
 
 // taking input from the user
 fn stdin_interpreter() {
-    let mut int_stack: Vec<i64> = Vec::new(); // stack of number
+    let mut int_stack: Stack<i64> = Stack::new(); // stack of number
     let mut compile_flag: bool = false; // flag to enter in compile mode
     let mut compiled_words: Vec<Vec<String>> = Vec::new(); // contain array of compiled words
     println!("Welcome to rForth\ntype 'bye' to exit");
@@ -168,7 +170,7 @@ fn stdin_interpreter() {
 // reading from a file
 fn file_interpreter(f: File) {
     let mut fd = BufReader::new(f);
-    let mut int_stack: Vec<i64> = Vec::new();
+    let mut int_stack: Stack<i64> = Stack::new(); // stack of number
     let mut line = String::new();
     let mut compile_flag: bool = false;
     let mut compiled_words: Vec<Vec<String>> = Vec::new();
