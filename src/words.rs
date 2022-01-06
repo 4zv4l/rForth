@@ -98,6 +98,65 @@ pub fn drop(int_stack: &mut Stack<i64>) -> i32 {
     return 0;
 }
 
+// print the top number of the stack
+pub fn dot(int_stack: &mut Stack<i64>) -> i32 {
+    if int_stack.is_empty() {
+        println!("Stack underflow");
+        return -1
+    }
+    let n = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    println!("{}", n);
+    return 0;
+}
+
+// modulo of the top two numbers of the stack
+pub fn modulo(int_stack: &mut Stack<i64>) -> i32 {
+    let n1 = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    let n2 = match int_stack.pop() {	
+        None =>  {
+            println!("Stack underflow");
+            return -1;
+        }
+        Some(n) => n,
+    };
+    if n2 == 0 {
+        println!("Division by zero");
+        return -1
+    }
+    int_stack.push(n2%n1);
+    return 0
+}
+
+// duplicate the top number of the stack
+pub fn dup(int_stack: &mut Stack<i64>) -> i32 {
+    if int_stack.is_empty() {
+        println!("Stack underflow");
+        return -1
+    }
+    let n = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    int_stack.push(n);
+    int_stack.push(n);
+    return 0
+}
+
 // print the top number of the stack in ascii
 pub fn emit(int_stack: &mut Stack<i64>) -> i32 {
     match int_stack.pop() {

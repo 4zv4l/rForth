@@ -40,8 +40,18 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
                 return -1
             }
         }
+        "mod" => {
+            if words::modulo(int_stack) == -1 {
+                return -1
+            }
+        }
         "drop" => { // remove the top number of the stack
             if words::drop(int_stack) == -1 {
+                return -1
+            }
+        }
+        "dup" => { // duplicate the top number of the stack
+            if words::dup(int_stack) == -1 {
                 return -1
             }
         }
@@ -56,8 +66,10 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
             println!("not in compile mode");
             return -1;
         }
-        r#".""# => {
-            println!("start string");
+        "." => { // print the top number of the stack
+            if words::dot(int_stack) == -1 {
+                return -1
+            }
         }
 
         // _TODO_ adding more builtin words here
