@@ -1,13 +1,13 @@
 use std::io::{stdin, BufReader, BufRead};
 use std::fs::File;
-use strs::{Stack, CompiledWords};
+use strs::{Stack, CompiledWords, Heap};
 
 mod words;
 mod compile;
 mod strs;
 
 // execute one word
-fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut CompiledWords, compile_flag: &mut bool) -> i32 {
+fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut CompiledWords, compile_flag: &mut bool, heap: &mut Heap) -> i32 {
     let input: &str = &input;
     match input {
         // builtin dictionnary
@@ -17,7 +17,7 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
                 print!("{} ", int_stack.inner[i]);
             }
         }
-        "show" => {
+        "stack" => { // show content of the stack
             print!("{}", int_stack);
         }
         "+" => {
@@ -71,17 +71,41 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
                 return -1
             }
         }
+        "@" => { // fetch a number from the heap
+            if words::fetch(int_stack, heap) == -1 {
+                return -1
+            }
+        }
+        "!" => { // store a number in the heap
+            if words::store(int_stack, heap) == -1 {
+                return -1
+            }
+        }
+        "heap" => { // show the heap
+            print!("{}", heap);
+        }
+        /*
+        "branch" => { // branch to a label
+            if words::branch(int_stack, pc) == -1 {
+                return -1
+            }
+        }
+        "branch?" => { // branch to a label if the top number of the stack is non-zero
+            if words::branch_if(int_stack, pc) == -1 {
+                return -1
+            }
+        }
+        */
 
         // _TODO_ adding more builtin words here
 
-        "key" => {
+        "key" => { // read a key from stdin
             words::key(int_stack);
         }
         "emit" => { // print the top number of the stack in ascii
             words::emit(int_stack);
         }
-        "words" => {
-            // show compiled words
+        "words" => { // show compiled words
             for i in 0..compiled_words.len() {
                 println!("{:?}", compiled_words[i]);
             }
@@ -92,7 +116,7 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
                 let word = compile::get_word(input.to_string(), compiled_words);
                 // proccess the word
                 let word = word[1..].to_vec(); // remove the word from the compiled words to avoid infinite loop
-                process_input(word, int_stack, compile_flag, compiled_words);
+                process_input(word, int_stack, compile_flag, compiled_words, heap);
             } else {
                 println!("{} : not known", input);
                 return -1;
@@ -103,7 +127,7 @@ fn execute_words(input: String, int_stack: &mut Stack<i64>, compiled_words: &mut
 }
 
 // process each words given by a file or a user
-fn process_input(input_array: Vec<String>, int_stack: &mut Stack<i64>, compile_flag: &mut bool, compiled_words: &mut CompiledWords) -> i32 {
+fn process_input(input_array: Vec<String>, int_stack: &mut Stack<i64>, compile_flag: &mut bool, compiled_words: &mut CompiledWords, heap: &mut Heap) -> i32 {
     for input in input_array {
         if *compile_flag { // enter in compile mode
             if input == ";" { // exit compile mode
@@ -135,7 +159,7 @@ fn process_input(input_array: Vec<String>, int_stack: &mut Stack<i64>, compile_f
                     int_stack.push(n)
                 }
                 Err(_) => { // else check dictionnary
-                    match execute_words(input, int_stack, compiled_words, compile_flag) {
+                    match execute_words(input, int_stack, compiled_words, compile_flag, heap) {
                         -1 => return -1, // word not found
                         1 => return 1, // bye
                         _ => {} // else
@@ -163,12 +187,13 @@ fn get_input() -> Vec<String> {
 // taking input from the user
 fn stdin_interpreter() {
     let mut int_stack: Stack<i64> = Stack::new(); // stack of number
+    let mut heap = Heap::new(); // heap to store and fetch data
     let mut compile_flag: bool = false; // flag to enter in compile mode
     let mut compiled_words: CompiledWords = CompiledWords::new(); // contain array of compiled words
     println!("Welcome to rForth\ntype 'bye' to exit");
     loop {
         let input_array = get_input();
-        match process_input(input_array, &mut int_stack, &mut compile_flag, &mut compiled_words) {
+        match process_input(input_array, &mut int_stack, &mut compile_flag, &mut compiled_words, &mut heap) {
             0 => {
                 if !compile_flag { // don't show while making words
                     println!(" ok."); // succeeded
@@ -185,13 +210,14 @@ fn stdin_interpreter() {
 fn file_interpreter(f: File) {
     let mut fd = BufReader::new(f);
     let mut int_stack: Stack<i64> = Stack::new(); // stack of number
+    let mut heap = Heap::new(); // heap to store and fetch data
     let mut line = String::new();
     let mut compile_flag: bool = false;
     let mut compiled_words: CompiledWords = CompiledWords::new();
     while fd.read_line(&mut line).unwrap() > 0 {
         line = line.trim().to_string();
         let input_array = line.split_whitespace().map(str::to_string).collect();
-        match process_input(input_array, &mut int_stack, &mut compile_flag, &mut compiled_words) {
+        match process_input(input_array, &mut int_stack, &mut compile_flag, &mut compiled_words, &mut heap) {
             1 => return, // bye
             -1 => (), // word not found
             _ => (),

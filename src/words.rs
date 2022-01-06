@@ -1,7 +1,7 @@
 use crossterm;
 use crossterm::event::{read, Event, KeyCode};
 
-use crate::Stack;
+use crate::{Stack, Heap};
 
 // take 2 top numbers from the stack and multiply them
 pub fn mul(int_stack: &mut Stack<i64>) -> i32 {
@@ -189,3 +189,111 @@ pub fn key(int_stack: &mut Stack<i64>) {
     // reset terminal
     crossterm::terminal::disable_raw_mode().unwrap();
 }
+
+// pop two number from the stack
+// the address of where to store the second number
+pub fn store(int_stack: &mut Stack<i64>, heap: &mut Heap) -> i32 {
+    let n1 = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    let n2 = match int_stack.pop() {	
+        None =>  {
+            println!("Stack underflow");
+            return -1;
+        }
+        Some(n) => n,
+    };
+    // use n1 as the address
+    let address = n1 as u8;
+    // use n2 as the value
+    let value = n2 as i64;
+    // store the value in the address
+    heap.store(address, value);
+    return 0
+}
+
+// pop the address from the stack
+// fetch the value from the address on the heap
+pub fn fetch(int_stack: &mut Stack<i64>, heap: &mut Heap) -> i32 {
+    let n = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    // use n as the address
+    let address = n as u8;
+    // fetch the value from the address
+    let value = match heap.fetch(address) {
+        None => {
+            println!("Segmentation fault");
+            return -1
+        }
+        Some(n) => n,
+    };
+    // push the value to the stack
+    int_stack.push(value);
+    return 0
+}
+
+/*
+// alloc a new address on the heap
+pub fn alloc(heap: &mut Heap) -> u8 {
+    // find not used memory address on the heap
+    let addr = heap.alloc();
+    return addr;
+}
+
+// free a variable on the heap
+pub fn free(int_stack: &mut Stack<i64>, heap: &mut Heap) -> i32 {
+    let n = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    // use n as the address
+    let address = n as u8;
+    // free the address
+    heap.free(address);
+    return 0
+}
+*/
+
+// basic jump
+// execute the next instruction anyway
+/*
+pub fn branch(int_stack: &mut Stack<i64>, pc: &mut usize) -> i32 {
+    let n = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    *pc = n as usize;
+    return 0
+}
+
+// conditional jump
+// execute the next instruction if the top number is not zero
+pub fn branch_if(int_stack: &mut Stack<i64>, pc: &mut usize) -> i32 {
+    let n = match int_stack.pop() {
+        None =>  {
+            println!("Stack underflow");
+            return -1
+        }
+        Some(n) => n,
+    };
+    if n != 0 {
+        *pc = n as usize;
+    }
+    return 0
+}
+*/
