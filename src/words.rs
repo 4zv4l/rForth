@@ -64,7 +64,7 @@ pub fn sub(int_stack: &mut Stack<i64>) -> i32 {
         }
         Some(n) => n,
     };
-    int_stack.push(n1-n2);
+    int_stack.push(n2-n1);
     return 0
 }
 
