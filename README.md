@@ -27,3 +27,7 @@ GREET↵ I speak Forth ok
 # Disclaimer
 > I'm not a pro rust programmer neither a pro forth programmer  
 > if the code is aweful please give me some tips :)  
+
+## restart
+Need to restart with a cleaner code base
+with a get_next() function instead of a whole function comparing each words
